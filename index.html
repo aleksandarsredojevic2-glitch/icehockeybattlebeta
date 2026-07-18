@@ -243,7 +243,15 @@ canvas {
 <script>
 const canvas = document.getElementById("hockeyCanvas");
 const ctx = canvas.getContext("2d");
-const socket = new WebSocket(`ws://${window.location.host}`);
+// Ovo će raditi i dok testiraš lokalno, i kada objaviš na netu
+const host = window.location.hostname;
+const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+const port = window.location.port ? `:${window.location.port}` : '';
+
+// Ako si na lokalnom računaru, koristi localhost, ako si na Renderu, koristi tvoj URL
+const wsUrl = host === 'localhost' ? 'ws://localhost:3000' : `wss://icehockeybattlebeta.onrender.com`;
+
+const socket = new WebSocket(wsUrl);
 
 let puck = { x: 1500, y: 750 };
 let players = {};
