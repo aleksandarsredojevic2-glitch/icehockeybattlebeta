@@ -439,7 +439,11 @@ ctx.fillRect(2623.3, (WORLD_HEIGHT / 2) - 100, 2, 200);
             // 5. Linije terena
             ctx.strokeStyle = "rgba(230, 60, 60, 0.6)"; ctx.lineWidth = 5 * s.scale;
             ctx.beginPath(); ctx.moveTo(WORLD_WIDTH / 2, s.top); ctx.lineTo(WORLD_WIDTH / 2, s.bottom); ctx.stroke();
-            
+            ctx.beginPath();
+           ctx.arc(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 120 * s.scale, 0, 2 * Math.PI);
+            ctx.strokeStyle = "rgba(60, 60, 230, 0.5)"; // Ista crvena kao središnja linija
+            ctx.lineWidth = 5 * s.scale;
+            ctx.stroke();
             ctx.strokeStyle = "rgba(60, 60, 230, 0.5)"; ctx.lineWidth = 6 * s.scale;
             ctx.beginPath(); 
             ctx.moveTo(s.left + (s.right - s.left) * 0.36, s.top); ctx.lineTo(s.left + (s.right - s.left) * 0.36, s.bottom);
@@ -534,19 +538,7 @@ document.addEventListener("keydown", (e) => {
 function draw() {
 
     // 1. Očisti ekran
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-   // 2. Nacrtaj centralni krug (PRE igrača da bi igrači bili preko njega)
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 100, 0, 2 * Math.PI); // 100 je poluprečnik
-    ctx.strokeStyle = "#ffffff"; // Bela boja za linije hokeja
-    ctx.lineWidth = 4;
-    ctx.stroke();
-
-
     // 2. Ako smo u meniju, ne crtaj igru
 
     if (document.getElementById('screen-login').style.display !== 'none' ||
