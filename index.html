@@ -247,6 +247,11 @@ const ctx = canvas.getContext("2d");
 const host = window.location.hostname;
 const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
 const port = window.location.port ? `:${window.location.port}` : '';
+const redPlayerImg = new Image();
+redPlayerImg.src = 'redplayer.png';
+
+const bluePlayerImg = new Image();
+bluePlayerImg.src = 'blueplayer.png';
 
 // Ako si na lokalnom računaru, koristi localhost, ako si na Renderu, koristi tvoj URL
 const wsUrl = host === 'localhost' ? 'ws://localhost:3000' : `wss://icehockeybattlebeta.onrender.com`;
@@ -593,20 +598,22 @@ ctx.translate(-camX, -camY); // Ovo pomera "prozor" u odnosu na svet
 
   // Crtaj igrače
 for (let id in players) {
-    let p = players[id];
-    
-    // 1. CRTANJE IGRAČA
-    ctx.fillStyle = (p.team === 'red') ? "#FF4A4A" : "#4d94ff";
-    ctx.beginPath(); 
-    ctx.arc(p.x, p.y, 16, 0, Math.PI * 2); 
-    ctx.fill();
+    let p = players[id];
+    let radius = 18; // ili tvoj radijus igrača
+    let imgToDraw = (p.team === 'red') ? redPlayerImg : bluePlayerImg;
 
-    // 2. CRTANJE "OBRUČA" (OVO DODAJ)
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 1.2; // Debljina obruča
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 16, 0, Math.PI * 2); // 1.6 je malo veće od radijusa igrača (16)
-    ctx.stroke();
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    
+    let imgWidth = imgToDraw.width || 32;
+    let imgHeight = imgToDraw.height || 32;
+    let aspectRatio = imgWidth / imgHeight;
+    let scaleFactor = 3.4; // Prilagodi veličinu dresa po želji
+    let drawH = radius * scaleFactor;
+    let drawW = drawH * aspectRatio;
+
+    ctx.drawImage(imgToDraw, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
 
 // OVO DODAJ: Crtanje imena
     ctx.fillStyle = "black";
