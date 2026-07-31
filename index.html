@@ -165,6 +165,101 @@ canvas {
     color: grey;
     box-sizing: border-box;
 }
+/* --- IN-GAME TOP BAR (menu + settings) --- */
+#gameTopBar {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 200;
+    display: none;
+    gap: 8px;
+    pointer-events: auto;
+}
+.icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(20, 24, 30, 0.75);
+    color: white;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+}
+.icon-btn:hover {
+    background: rgba(40, 46, 56, 0.9);
+}
+.game-panel {
+    position: absolute;
+    top: 58px;
+    right: 12px;
+    z-index: 200;
+    display: none;
+    background: rgba(20, 24, 30, 0.9);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 14px;
+    color: white;
+    font-family: sans-serif;
+    min-width: 220px;
+    pointer-events: auto;
+}
+.game-panel h3 {
+    margin-bottom: 10px;
+    font-size: 15px;
+    text-align: center;
+    letter-spacing: 1px;
+    color: #cfd8e3;
+}
+#gameMenuPanel .menu-team-columns {
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+}
+#gameMenuPanel .menu-team-columns > div {
+    flex: 1;
+    text-align: center;
+}
+#gameMenuPanel .menu-team-columns h4 {
+    font-size: 12px;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+#gameMenuPanel .menu-team-columns h4.red { color: #FF4A4A; }
+#gameMenuPanel .menu-team-columns h4.blue { color: #4d94ff; }
+#gameMenuPanel .menu-team-columns h4.spec { color: #A6A6A6; }
+#gameMenuPanel ul {
+    list-style: none;
+    font-size: 13px;
+}
+#gameMenuPanel ul li {
+    padding: 2px 0;
+}
+#gameSettingsPanel .zoom-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+#gameSettingsPanel .zoom-options button {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+}
+#gameSettingsPanel .zoom-options button:hover {
+    background: rgba(255,255,255,0.18);
+}
+#gameSettingsPanel .zoom-options button.active {
+    background: #4d94ff;
+    border-color: #4d94ff;
+    font-weight: bold;
+}
 #screen-login {
     position: fixed;
     top: 0;
@@ -233,6 +328,41 @@ canvas {
         </div>
     </div>
     <canvas id="hockeyCanvas"></canvas>
+
+    <div id="gameTopBar">
+        <div class="icon-btn" id="menuBtn" onclick="toggleMenuPanel()" title="Menu">☰</div>
+        <div class="icon-btn" id="settingsBtn" onclick="toggleSettingsPanel()" title="Settings">⚙</div>
+    </div>
+
+    <div id="gameMenuPanel" class="game-panel">
+        <h3>PLAYERS</h3>
+        <div class="menu-team-columns">
+            <div>
+                <h4 class="red">RED</h4>
+                <ul id="menu-list-red"></ul>
+            </div>
+            <div>
+                <h4 class="spec">SPEC</h4>
+                <ul id="menu-list-spectators"></ul>
+            </div>
+            <div>
+                <h4 class="blue">BLUE</h4>
+                <ul id="menu-list-blue"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameSettingsPanel" class="game-panel">
+        <h3>CAMERA ZOOM</h3>
+        <div class="zoom-options" id="zoomOptions">
+            <button data-zoom="1" onclick="setCameraZoom(1)">x1</button>
+            <button data-zoom="1.25" onclick="setCameraZoom(1.25)">x1.25</button>
+            <button data-zoom="1.5" onclick="setCameraZoom(1.5)">x1.5</button>
+            <button data-zoom="1.75" onclick="setCameraZoom(1.75)">x1.75</button>
+            <button data-zoom="2" onclick="setCameraZoom(2)">x2</button>
+        </div>
+    </div>
+
 <div id="chatBox" style="
     position: absolute;
     bottom: 30px;
@@ -269,6 +399,7 @@ let puck = { x: 1500, y: 750 };
 let players = {};
 let myId = null;
 let currentScore = { teamRed: 0, teamBlue: 0 };
+let cameraZoom = 1; // x1, x1.25, x1.5, x1.75, x2 - kao u Haxballu
 const WORLD_WIDTH = 3000;
 const WORLD_HEIGHT = 1500;
 // MORA biti identično sa server.js!
@@ -284,7 +415,82 @@ function getSpecs() {
 function showChat() {
     document.getElementById('chatInputContainer').style.display = 'block';
     document.getElementById('chatBox').style.display = 'block';
+    document.getElementById('gameTopBar').style.display = 'flex';
 }
+
+// --- IN-GAME MENI (samo dok smo u igri, join-ovani u room) ---
+function isInGame() {
+    return document.getElementById('screen-login').style.display === 'none' &&
+           document.getElementById('screen-rooms').style.display === 'none' &&
+           document.getElementById('screen-lobby').style.display === 'none';
+}
+
+function closeAllGamePanels() {
+    document.getElementById('gameMenuPanel').style.display = 'none';
+    document.getElementById('gameSettingsPanel').style.display = 'none';
+}
+
+function toggleMenuPanel() {
+    if (!isInGame()) return;
+    const panel = document.getElementById('gameMenuPanel');
+    const isOpen = panel.style.display === 'block';
+    closeAllGamePanels();
+    panel.style.display = isOpen ? 'none' : 'block';
+}
+
+function toggleSettingsPanel() {
+    if (!isInGame()) return;
+    const panel = document.getElementById('gameSettingsPanel');
+    const isOpen = panel.style.display === 'block';
+    closeAllGamePanels();
+    panel.style.display = isOpen ? 'none' : 'block';
+}
+
+function setCameraZoom(value) {
+    cameraZoom = value;
+    document.querySelectorAll('#zoomOptions button').forEach(btn => {
+        btn.classList.toggle('active', parseFloat(btn.dataset.zoom) === value);
+    });
+}
+
+function updateMenuPlayerList() {
+    const listRed = document.getElementById('menu-list-red');
+    const listBlue = document.getElementById('menu-list-blue');
+    const listSpec = document.getElementById('menu-list-spectators');
+    if (!listRed || !listBlue || !listSpec) return;
+
+    listRed.innerHTML = "";
+    listBlue.innerHTML = "";
+    listSpec.innerHTML = "";
+
+    Object.values(players).forEach(p => {
+        let li = document.createElement('li');
+        li.innerText = p.name;
+        if (p.team === 'red') listRed.appendChild(li);
+        else if (p.team === 'blue') listBlue.appendChild(li);
+        else listSpec.appendChild(li);
+    });
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (document.activeElement === document.getElementById('chatInput')) {
+            document.activeElement.blur();
+            return;
+        }
+        if (!isInGame()) return;
+        const menuOpen = document.getElementById('gameMenuPanel').style.display === 'block';
+        const settingsOpen = document.getElementById('gameSettingsPanel').style.display === 'block';
+        if (menuOpen || settingsOpen) {
+            closeAllGamePanels();
+        } else {
+            toggleMenuPanel();
+        }
+    }
+});
+
+// podrazumevani zum obeleži kao aktivan
+setCameraZoom(1);
 function drawScore() {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -397,6 +603,8 @@ socket.onmessage = (event) => {
         alert("Pobednik: " + data.winner);
         document.getElementById('chatBox').style.display = 'none';
         document.getElementById('chatInputContainer').style.display = 'none';
+        document.getElementById('gameTopBar').style.display = 'none';
+        closeAllGamePanels();
         showScreen('screen-lobby');
     }
 
@@ -432,6 +640,8 @@ socket.onmessage = (event) => {
             else if (p.team === 'blue') listBlue.appendChild(li);
             else listSpec.appendChild(li);
         });
+
+        updateMenuPlayerList();
     }
 }
 
@@ -566,13 +776,17 @@ function draw() {
     let targetX = me ? me.x : WORLD_WIDTH / 2;
     let targetY = me ? me.y : WORLD_HEIGHT / 2;
 
-    let camX = targetX - canvas.width / 2;
-    let camY = targetY - canvas.height / 2;
+    const viewW = canvas.width * cameraZoom;
+    const viewH = canvas.height * cameraZoom;
 
-    camX = Math.max(0, Math.min(camX, WORLD_WIDTH - canvas.width));
-    camY = Math.max(0, Math.min(camY, WORLD_HEIGHT - canvas.height));
+    let camX = targetX - viewW / 2;
+    let camY = targetY - viewH / 2;
+
+    camX = Math.max(0, Math.min(camX, WORLD_WIDTH - viewW));
+    camY = Math.max(0, Math.min(camY, WORLD_HEIGHT - viewH));
 
     ctx.save();
+    ctx.scale(1 / cameraZoom, 1 / cameraZoom);
     ctx.translate(-camX, -camY);
 
     drawVectorField();
