@@ -415,6 +415,7 @@ let puck = { x: 1500, y: 750 };
 let players = {};
 let myId = null;
 let isAdmin = false;
+let lastLobbySignature = "";
 let currentScore = { teamRed: 0, teamBlue: 0 };
 let cameraZoom = 1; // x1, x1.25, x1.5, x1.75, x2 - kao u Haxballu
 const WORLD_WIDTH = 3000;
@@ -643,37 +644,45 @@ socket.onmessage = (event) => {
         isAdmin = (data.adminId === myId);
         if (startBtn) startBtn.style.display = isAdmin ? "block" : "none";
 
-        const listRed = document.getElementById('list-red');
-        const listBlue = document.getElementById('list-blue');
-        const listSpec = document.getElementById('list-spectators');
+        // Renderuj listu igraca (i admin dugmice) SAMO ako se nesto stvarno promenilo -
+        // u suprotnom se DOM brise/pravi 60x/sek i klikovi na dugmice se gube.
+        const lobbySignature = isAdmin + '|' + Object.entries(players).map(([id, p]) => id + ':' + p.name + ':' + p.team).join(',');
 
-        listRed.innerHTML = "";
-        listBlue.innerHTML = "";
-        listSpec.innerHTML = "";
+        if (lobbySignature !== lastLobbySignature) {
+            lastLobbySignature = lobbySignature;
 
-        Object.entries(players).forEach(([id, p]) => {
-            let li = document.createElement('li');
-            li.innerText = p.name;
+            const listRed = document.getElementById('list-red');
+            const listBlue = document.getElementById('list-blue');
+            const listSpec = document.getElementById('list-spectators');
 
-            if (isAdmin) {
-                // host moze da premesti bilo kog igraca u bilo koji tim
-                const teams = ['red', 'blue', 'spectator'].filter(t => t !== p.team);
-                teams.forEach(t => {
-                    let btn = document.createElement('button');
-                    btn.className = 'admin-move-btn';
-                    btn.innerText = t === 'spectator' ? 'S' : t.toUpperCase()[0];
-                    btn.title = t === 'spectator' ? 'Vrati u spectate' : 'Ubaci u ' + t.toUpperCase();
-                    btn.onclick = () => adminAssignTeam(id, t);
-                    li.appendChild(btn);
-                });
-            }
+            listRed.innerHTML = "";
+            listBlue.innerHTML = "";
+            listSpec.innerHTML = "";
 
-            if (p.team === 'red') listRed.appendChild(li);
-            else if (p.team === 'blue') listBlue.appendChild(li);
-            else listSpec.appendChild(li);
-        });
+            Object.entries(players).forEach(([id, p]) => {
+                let li = document.createElement('li');
+                li.innerText = p.name;
 
-        updateMenuPlayerList();
+                if (isAdmin) {
+                    // host moze da premesti bilo kog igraca u bilo koji tim
+                    const teams = ['red', 'blue', 'spectator'].filter(t => t !== p.team);
+                    teams.forEach(t => {
+                        let btn = document.createElement('button');
+                        btn.className = 'admin-move-btn';
+                        btn.innerText = t === 'spectator' ? 'S' : t.toUpperCase()[0];
+                        btn.title = t === 'spectator' ? 'Vrati u spectate' : 'Ubaci u ' + t.toUpperCase();
+                        btn.onclick = () => adminAssignTeam(id, t);
+                        li.appendChild(btn);
+                    });
+                }
+
+                if (p.team === 'red') listRed.appendChild(li);
+                else if (p.team === 'blue') listBlue.appendChild(li);
+                else listSpec.appendChild(li);
+            });
+
+            updateMenuPlayerList();
+        }
     }
 }
 
