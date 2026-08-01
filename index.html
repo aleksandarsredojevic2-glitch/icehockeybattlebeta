@@ -2,7 +2,7 @@
 <html lang="sr">
 <head>
     <meta charset="UTF-8">
-    <title>IHB Ice Hockey Battle</title>
+    <title>IHB Ice Hockey 5v5</title>
     <style>
 * {
     margin: 0;
@@ -164,6 +164,19 @@ canvas {
     background: #9EACB880;
     color: grey;
     box-sizing: border-box;
+}
+.admin-move-btn {
+    margin-left: 6px;
+    padding: 1px 6px;
+    font-size: 11px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.12);
+    color: white;
+    cursor: pointer;
+}
+.admin-move-btn:hover {
+    background: rgba(255,255,255,0.28);
 }
 /* --- IN-GAME TOP BAR (menu + settings) --- */
 #gameTopBar {
@@ -391,13 +404,17 @@ const host = window.location.hostname;
 const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
 const port = window.location.port ? `:${window.location.port}` : '';
 
-const wsUrl = host === 'localhost' ? 'ws://localhost:3000' : `wss://icehockeybattlebeta.onrender.com`;
+// Prepoznaje localhost, 127.0.0.1 i privatne LAN opsege (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+const isLocalNetwork = /^(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})$/.test(host);
+
+const wsUrl = isLocalNetwork ? `ws://${host}:3000` : `wss://icehockeybattlebeta.onrender.com`;
 
 const socket = new WebSocket(wsUrl);
 
 let puck = { x: 1500, y: 750 };
 let players = {};
 let myId = null;
+let isAdmin = false;
 let currentScore = { teamRed: 0, teamBlue: 0 };
 let cameraZoom = 1; // x1, x1.25, x1.5, x1.75, x2 - kao u Haxballu
 const WORLD_WIDTH = 3000;
@@ -623,7 +640,8 @@ socket.onmessage = (event) => {
         currentScore = data.score;
 
         const startBtn = document.getElementById('start-btn');
-        if (startBtn) startBtn.style.display = (data.adminId === myId) ? "block" : "none";
+        isAdmin = (data.adminId === myId);
+        if (startBtn) startBtn.style.display = isAdmin ? "block" : "none";
 
         const listRed = document.getElementById('list-red');
         const listBlue = document.getElementById('list-blue');
@@ -633,9 +651,23 @@ socket.onmessage = (event) => {
         listBlue.innerHTML = "";
         listSpec.innerHTML = "";
 
-        Object.values(players).forEach(p => {
+        Object.entries(players).forEach(([id, p]) => {
             let li = document.createElement('li');
             li.innerText = p.name;
+
+            if (isAdmin) {
+                // host moze da premesti bilo kog igraca u bilo koji tim
+                const teams = ['red', 'blue', 'spectator'].filter(t => t !== p.team);
+                teams.forEach(t => {
+                    let btn = document.createElement('button');
+                    btn.className = 'admin-move-btn';
+                    btn.innerText = t === 'spectator' ? 'S' : t.toUpperCase()[0];
+                    btn.title = t === 'spectator' ? 'Vrati u spectate' : 'Ubaci u ' + t.toUpperCase();
+                    btn.onclick = () => adminAssignTeam(id, t);
+                    li.appendChild(btn);
+                });
+            }
+
             if (p.team === 'red') listRed.appendChild(li);
             else if (p.team === 'blue') listBlue.appendChild(li);
             else listSpec.appendChild(li);
@@ -727,7 +759,16 @@ function goToRoomScreen() {
 }
 function changeTeam(team) {
     const nick = document.getElementById('nameInput').value || "Guest";
+    if ((team === 'red' || team === 'blue') && !isAdmin) {
+        alert("Samo host može da ubacuje igrače u tim.");
+        return;
+    }
     socket.send(JSON.stringify({ type: 'set-team', team: team, name: nick }));
+}
+
+function adminAssignTeam(targetId, team) {
+    if (!isAdmin) return;
+    socket.send(JSON.stringify({ type: 'admin-set-team', targetId: targetId, team: team }));
 }
 
 function resize() {
