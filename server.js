@@ -155,6 +155,20 @@ wss.on('connection', (ws) => {
     ws.send(JSON.stringify({ type: 'welcome', myId: myId }));
     players[myId] = { team: 'spectator', keys: {}, name: 'Guest', roomId: null };
 
+    // Pošalji klijentu sve dimenzije terena - klijent ih više ne treba hardkodirane
+    ws.send(JSON.stringify({
+        type: 'world-info',
+        WORLD_WIDTH: WORLD_WIDTH,
+        WORLD_HEIGHT: WORLD_HEIGHT,
+        ICE_WIDTH: ICE_WIDTH,
+        ICE_HEIGHT: ICE_HEIGHT,
+        CORNER_R: CORNER_R,
+        GOAL_WIDTH: GOAL_WIDTH,
+        PUSH_IN_GOAL: PUSH_IN_GOAL,
+        GOL_DUBINA: GOL_DUBINA,
+        T: T
+    }));
+
     // Odmah pošalji trenutnu listu soba novom klijentu
     ws.send(JSON.stringify({ type: 'room-list', rooms: getRoomList() }));
 
