@@ -418,17 +418,47 @@ let isAdmin = false;
 let lastLobbySignature = "";
 let currentScore = { teamRed: 0, teamBlue: 0 };
 let cameraZoom = 1; // x1, x1.25, x1.5, x1.75, x2 - kao u Haxballu
-const WORLD_WIDTH = 3000;
-const WORLD_HEIGHT = 1500;
-// MORA biti identično sa server.js!
-const ICE_WIDTH = 2600;
-const ICE_HEIGHT = 1200;
+
+// Fallback vrednosti dok ne stigne 'world-info' sa servera (da draw() ne puca pre konekcije).
+// Nakon konekcije, worldInfo se prepisuje stvarnim vrednostima sa servera - server je jedini izvor istine.
+let worldInfo = {
+    WORLD_WIDTH: 3000,
+    WORLD_HEIGHT: 1500,
+    ICE_WIDTH: 2600,
+    ICE_HEIGHT: 1200,
+    CORNER_R: 160,
+    GOAL_WIDTH: 190,
+    PUSH_IN_GOAL: 176.7,
+    GOL_DUBINA: 20,
+    T: 35
+};
+let WORLD_WIDTH = worldInfo.WORLD_WIDTH;
+let WORLD_HEIGHT = worldInfo.WORLD_HEIGHT;
 let iceScratches = [];
 
 function getSpecs() {
-    const startX = (WORLD_WIDTH - ICE_WIDTH) / 2;
-    const startY = (WORLD_HEIGHT - ICE_HEIGHT) / 2;
-    return { scale: 1, left: startX, right: startX + ICE_WIDTH, top: startY, bottom: startY + ICE_HEIGHT, cornerRadius: 160, goalLineLeft: startX + ICE_WIDTH * 0.07, goalLineRight: startX + ICE_WIDTH * 0.93, faceoffR: ICE_HEIGHT * 0.13, goal: { w: ICE_WIDTH * 0.025, h: ICE_HEIGHT * 0.15, y: startY + (ICE_HEIGHT/2) - (ICE_HEIGHT * 0.15 / 2), creaseR: (ICE_HEIGHT * 0.15) * 0.55 } };
+    const w = worldInfo;
+    const startX = (WORLD_WIDTH - w.ICE_WIDTH) / 2;
+    const startY = (WORLD_HEIGHT - w.ICE_HEIGHT) / 2;
+    const goalLineLeft = startX + w.PUSH_IN_GOAL;
+    const goalLineRight = startX + w.ICE_WIDTH - w.PUSH_IN_GOAL;
+    return {
+        scale: 1,
+        left: startX,
+        right: startX + w.ICE_WIDTH,
+        top: startY,
+        bottom: startY + w.ICE_HEIGHT,
+        cornerRadius: w.CORNER_R,
+        goalLineLeft: goalLineLeft,
+        goalLineRight: goalLineRight,
+        faceoffR: w.ICE_HEIGHT * 0.13,
+        goal: {
+            w: w.GOAL_WIDTH * 0.35, // dubina nacrtane mreže (čisto vizuelno)
+            h: w.GOAL_WIDTH,        // visina otvora gola - TAČNO ista kao stvarna zona detekcije gola na serveru
+            y: startY + (w.ICE_HEIGHT / 2) - (w.GOAL_WIDTH / 2),
+            creaseR: w.GOAL_WIDTH * 0.55
+        }
+    };
 }
 function showChat() {
     document.getElementById('chatInputContainer').style.display = 'block';
@@ -602,6 +632,12 @@ socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
 
     if (data.type === 'welcome') myId = data.myId;
+
+    if (data.type === 'world-info') {
+        worldInfo = data;
+        WORLD_WIDTH = data.WORLD_WIDTH;
+        WORLD_HEIGHT = data.WORLD_HEIGHT;
+    }
 
     if (data.type === 'room-list') {
         renderRoomList(data.rooms);
