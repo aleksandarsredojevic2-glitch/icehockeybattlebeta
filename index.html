@@ -858,10 +858,10 @@ function draw() {
     }
 
     let me = players[myId];
+    let hasPosition = me && me.x != null && me.y != null;
 
-    let targetX = me ? me.x : WORLD_WIDTH / 2;
-    let targetY = me ? me.y : WORLD_HEIGHT / 2;
-
+    let targetX = hasPosition ? me.x : WORLD_WIDTH / 2;
+    let targetY = hasPosition ? me.y : WORLD_HEIGHT / 2;
     const viewW = canvas.width * cameraZoom;
     const viewH = canvas.height * cameraZoom;
 
