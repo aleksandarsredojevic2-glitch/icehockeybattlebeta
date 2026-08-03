@@ -606,7 +606,7 @@ function renderRoomList(roomList) {
     const container = document.getElementById('room-list-container');
     container.innerHTML = "";
     if (!roomList || roomList.length === 0) {
-        container.innerHTML = "<p style='color:white; text-align:center;'>Nema aktivnih soba. Napravi novu!</p>";
+        container.innerHTML = "<p style='color:white; text-align:center;'> </p>";
         return;
     }
     roomList.forEach(room => {
