@@ -214,7 +214,7 @@ wss.on('connection', (ws) => {
             ws.roomId = roomId;
             players[myId].roomId = roomId;
             players[myId].name = data.name || "Guest";
-            let body = Matter.Bodies.circle(1500, 750, 18, { restitution: 0.01, frictionAir: 0.1, density: 0.002, inertia: Infinity });
+            let body = Matter.Bodies.circle(1500, 750, 18, { restitution: 0.001, frictionAir: 0.1, density: 0.002, inertia: Infinity });
             players[myId].body = body;
             Matter.World.add(rooms[roomId].engine.world, body);
             broadcastRoomList();
