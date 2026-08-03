@@ -313,7 +313,7 @@ setInterval(() => {
                 if (dx !== 0 || dy !== 0) {
                     let magnitude = Math.sqrt(dx * dx + dy * dy);
                     let nx = dx / magnitude, ny = dy / magnitude;
-                    if (Math.sqrt(p.body.velocity.x ** 2 + p.body.velocity.y ** 2) < 5) {
+                    if (Math.sqrt(p.body.velocity.x ** 2 + p.body.velocity.y ** 2) < 3) {
                         Matter.Body.applyForce(p.body, p.body.position, { x: nx * 0.03, y: ny * 0.03 });
                     }
                 }
