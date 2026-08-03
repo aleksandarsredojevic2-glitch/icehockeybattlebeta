@@ -121,7 +121,7 @@ function resetRoom(roomId) {
     setTimeout(() => { room.isResetting = false; }, 500);
 }
 // Upravlja fizičkim telom igrača u zavisnosti od tima.
-// Spectator NEMA telo na ledu (ne postoji na terenu, ne sudara se sa pakom/igračima).
+// Spectator NEMA telo na leduuu (ne postoji na terenu, ne sudara se sa pakom/igračima).
 // Telo se pravi tek kad igrač stvarno uđe u red/blue, i uklanja se čim ode u spectate.
 function setPlayerTeam(p, room, team) {
     if (team === p.team) return;
