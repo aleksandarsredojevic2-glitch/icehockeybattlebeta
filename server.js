@@ -120,7 +120,30 @@ function resetRoom(roomId) {
 
     setTimeout(() => { room.isResetting = false; }, 500);
 }
+// Upravlja fizičkim telom igrača u zavisnosti od tima.
+// Spectator NEMA telo na ledu (ne postoji na terenu, ne sudara se sa pakom/igračima).
+// Telo se pravi tek kad igrač stvarno uđe u red/blue, i uklanja se čim ode u spectate.
+function setPlayerTeam(p, room, team) {
+    if (team === p.team) return;
 
+    if (team === 'spectator') {
+        if (p.body && room) {
+            Matter.World.remove(room.engine.world, p.body);
+        }
+        p.body = null;
+        p.team = 'spectator';
+
+    } else if (team === 'red' || team === 'blue') {
+        p.team = team;
+        if (!p.body && room) {
+            let spawnX = team === 'red' ? (WORLD_WIDTH / 2 - 400) : (WORLD_WIDTH / 2 + 400);
+            let spawnY = WORLD_HEIGHT / 2 + (Math.random() * 200 - 100);
+            let body = Matter.Bodies.circle(spawnX, spawnY, 18, { restitution: 0.01, frictionAir: 0.2, density: 0.002, inertia: Infinity });
+            p.body = body;
+            Matter.World.add(room.engine.world, body);
+        }
+    }
+}
 function createCorner(x, y, type) {
     let corners = [];
     let startAngle = (type === 'TL' ? Math.PI : type === 'TR' ? Math.PI * 1.5 : type === 'BL' ? Math.PI * 0.5 : 0);
@@ -211,12 +234,11 @@ wss.on('connection', (ws) => {
                 ws.send(JSON.stringify({ type: 'room-list', rooms: getRoomList() }));
                 return;
             }
-            ws.roomId = roomId;
+           ws.roomId = roomId;
             players[myId].roomId = roomId;
             players[myId].name = data.name || "Guest";
-            let body = Matter.Bodies.circle(1500, 750, 18, { restitution: 0.0005, frictionAir: 0.10, density: 0.002, inertia: Infinity });
-            players[myId].body = body;
-            Matter.World.add(rooms[roomId].engine.world, body);
+            // NAPOMENA: telo se namerno NE pravi ovde. Igrač ulazi kao spectator
+            // (bez tela na ledu) - telo se kreira tek kad izabere red/blue tim.
             broadcastRoomList();
 
         } else if (data.type === 'create-room') {
@@ -236,13 +258,13 @@ wss.on('connection', (ws) => {
             const room = p.roomId ? rooms[p.roomId] : null;
             p.name = data.name;
 
-            if (data.team === 'spectator') {
+           if (data.team === 'spectator') {
                 // svako moze sam sebe da vrati u spectate
-                p.team = 'spectator';
+                setPlayerTeam(p, room, 'spectator');
             } else if (data.team === 'red' || data.team === 'blue') {
                 // iz speca u red/blue moze samo host (i to samo sebe)
                 if (room && room.adminId === myId) {
-                    p.team = data.team;
+                    setPlayerTeam(p, room, data.team);
                 }
                 // obican igrac ne moze sam sebe da ubaci u tim - zahtev se ignorise
             }
@@ -252,12 +274,11 @@ wss.on('connection', (ws) => {
             const room = p.roomId ? rooms[p.roomId] : null;
             const target = players[data.targetId];
 
-            if (room && room.adminId === myId && target && target.roomId === p.roomId) {
+           if (room && room.adminId === myId && target && target.roomId === p.roomId) {
                 if (data.team === 'red' || data.team === 'blue' || data.team === 'spectator') {
-                    target.team = data.team;
+                    setPlayerTeam(target, room, data.team);
                 }
             }
-
         } else if (data.type === 'start-game') {
             let roomId = players[myId].roomId;
             let room = rooms[roomId];
