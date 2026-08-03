@@ -380,10 +380,19 @@ setInterval(() => {
         }
 
         // 4. Slanje update-a klijentima
+        // 4. Slanje update-a klijentima
+        // Šaljemo SVE igrače u sobi (uključujući spectatore, bez x/y) da bi lobby lista
+        // i admin dugmići za premeštanje radili i pre starta igre.
         let playerList = {};
         for (let id in players) {
-            if (players[id].roomId === roomId && players[id].body) {
-                playerList[id] = { x: players[id].body.position.x, y: players[id].body.position.y, team: players[id].team, name: players[id].name };
+            const pl = players[id];
+            if (pl.roomId === roomId) {
+                playerList[id] = {
+                    team: pl.team,
+                    name: pl.name,
+                    x: pl.body ? pl.body.position.x : null,
+                    y: pl.body ? pl.body.position.y : null
+                };
             }
         }
         broadcastToRoom(roomId, { type: 'update', puck: { x: room.puck.position.x, y: room.puck.position.y }, players: playerList, score: room.score, adminId: room.adminId });
