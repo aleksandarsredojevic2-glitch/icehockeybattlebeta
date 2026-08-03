@@ -214,7 +214,7 @@ wss.on('connection', (ws) => {
             ws.roomId = roomId;
             players[myId].roomId = roomId;
             players[myId].name = data.name || "Guest";
-            let body = Matter.Bodies.circle(1500, 750, 18, { restitution: 0.01, frictionAir: 0.2, density: 0.002, inertia: Infinity });
+            let body = Matter.Bodies.circle(1500, 750, 18, { restitution: 0.01, frictionAir: 0.1, density: 0.002, inertia: Infinity });
             players[myId].body = body;
             Matter.World.add(rooms[roomId].engine.world, body);
             broadcastRoomList();
@@ -313,8 +313,8 @@ setInterval(() => {
                 if (dx !== 0 || dy !== 0) {
                     let magnitude = Math.sqrt(dx * dx + dy * dy);
                     let nx = dx / magnitude, ny = dy / magnitude;
-                    if (Math.sqrt(p.body.velocity.x ** 2 + p.body.velocity.y ** 2) < 3) {
-                        Matter.Body.applyForce(p.body, p.body.position, { x: nx * 0.03, y: ny * 0.03 });
+                    if (Math.sqrt(p.body.velocity.x ** 2 + p.body.velocity.y ** 2) < 2.9) {
+                        Matter.Body.applyForce(p.body, p.body.position, { x: nx * 0.02, y: ny * 0.02 });
                     }
                 }
             }
