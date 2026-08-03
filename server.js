@@ -77,7 +77,7 @@ function createRoom(roomId, adminId) {
     });
 
     const puck = Matter.Bodies.circle(1500, 750, 6, {
-        restitution: 0.1,
+        restitution: 0.008,
         friction: 0.05,
         frictionAir: 0.01,
         mass: 0.04,
