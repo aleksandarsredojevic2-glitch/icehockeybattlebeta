@@ -882,6 +882,7 @@ function draw() {
 
     for (let id in players) {
         let p = players[id];
+        if (p.team !== 'red' && p.team !== 'blue') continue; // spectatori se ne crtaju na terenu
 
         ctx.fillStyle = (p.team === 'red') ? "#FF4A4A" : "#4d94ff";
         ctx.beginPath();
