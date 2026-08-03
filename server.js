@@ -80,7 +80,7 @@ function createRoom(roomId, adminId) {
         restitution: 0.02,
         friction: 0.05,
         frictionAir: 0.01,
-        mass: 0.04,
+        mass: 0.07,
         label: 'puck'
     });
     Matter.World.add(engine.world, puck);
@@ -214,7 +214,7 @@ wss.on('connection', (ws) => {
             ws.roomId = roomId;
             players[myId].roomId = roomId;
             players[myId].name = data.name || "Guest";
-            let body = Matter.Bodies.circle(1500, 750, 18, { restitution: 0.0005, frictionAir: 0.09, density: 0.002, inertia: Infinity });
+            let body = Matter.Bodies.circle(1500, 750, 18, { restitution: 0.0005, frictionAir: 0.10, density: 0.002, inertia: Infinity });
             players[myId].body = body;
             Matter.World.add(rooms[roomId].engine.world, body);
             broadcastRoomList();
@@ -313,7 +313,7 @@ setInterval(() => {
                 if (dx !== 0 || dy !== 0) {
                     let magnitude = Math.sqrt(dx * dx + dy * dy);
                     let nx = dx / magnitude, ny = dy / magnitude;
-                    if (Math.sqrt(p.body.velocity.x ** 2 + p.body.velocity.y ** 2) < 2.5) {
+                    if (Math.sqrt(p.body.velocity.x ** 2 + p.body.velocity.y ** 2) < 2.01) {
                         Matter.Body.applyForce(p.body, p.body.position, { x: nx * 0.02, y: ny * 0.02 });
                     }
                 }
