@@ -1,39 +1,39 @@
-const express = require('express');
-const http = require('http');
-const WebSocket = require('ws');
-const Matter = require('matter-js');
+const _XgcFSRPo = require('\x65\x78\x70\x72\x65\x73\x73');
+const _gvBhi = require('\x68\x74\x74\x70');
+const _cQFOcq = require('\x77\x73');
+const _vnwlYBye = require('\x6d\x61\x74\x74\x65\x72\x2d\x6a\x73');
 
-function generateRandomId() {
+function fnHBnz() {
     return Math.random().toString(36).substr(2, 9);
 }
 
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const _jEgUxBi = express();
+const _RsK = http.createServer(app);
+const _SmkNJWqE = new WebSocket.Server({ server });
 
 app.use(express.static(__dirname));
 
-let rooms = {};
-let players = {};
+let _jyT = {};
+let _EXm = {};
 
-const WORLD_WIDTH = 3000;
-const WORLD_HEIGHT = 1500;
-const ICE_WIDTH = 2600;
-const ICE_HEIGHT = 1200;
-const startX = (WORLD_WIDTH - ICE_WIDTH) / 2;
-const startY = (WORLD_HEIGHT - ICE_HEIGHT) / 2;
-const T = 35;
-const CORNER_R = 160;
-const GOAL_WIDTH = 190;
-const ZID_SIRINA = 70;
-const ZID_VISINA = 185;
-const PUSH_IN_GOAL = 176.7;
-const GOL_DUBINA = 20;
+const _CtEDXBCl = 3000;
+const _INTuq = 1500;
+const _Nly = 2600;
+const _KJnNHgkN = 1200;
+const _FAL = (WORLD_WIDTH - ICE_WIDTH) / 2;
+const _OiO = (WORLD_HEIGHT - ICE_HEIGHT) / 2;
+const _vtPnYyU = 35;
+const _WUoZB = 160;
+const _gtGbhOJ = 190;
+const _Chngk = 70;
+const _HHTwtt = 185;
+const _JUPk = 176.7;
+const _gVDF = 20;
 
 // --- BROADCAST HELPERI ---
 
-function broadcastToRoom(roomId, messageObj) {
-    const payload = JSON.stringify(messageObj);
+function fnuBeVepPb(roomId, messageObj) {
+    const _PczcMYUZ = JSON.stringify(messageObj);
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN && client.roomId === roomId) {
             client.send(payload);
@@ -41,9 +41,9 @@ function broadcastToRoom(roomId, messageObj) {
     });
 }
 
-function getRoomList() {
+function fnrtImw() {
     return Object.keys(rooms).map(id => {
-        const playerCount = Object.values(players).filter(p => p.roomId === id).length;
+        const _SLiMf = Object.values(players).filter(p => p.roomId === id).length;
         return {
             id: id,
             playerCount: playerCount,
@@ -52,8 +52,8 @@ function getRoomList() {
     });
 }
 
-function broadcastRoomList() {
-    const payload = JSON.stringify({ type: 'room-list', rooms: getRoomList() });
+function fntLCjki() {
+    const _PczcMYUZ = JSON.stringify({ type: '\x72\x6f\x6f\x6d\x2d\x6c\x69\x73\x74', rooms: getRoomList() });
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(payload);
@@ -63,8 +63,8 @@ function broadcastRoomList() {
 
 // --- SVET / FIZIKA ---
 
-function createRoom(roomId, adminId) {
-    const engine = Matter.Engine.create();
+function fnoOUgwEF(roomId, adminId) {
+    const _Ghuq = Matter.Engine.create();
     engine.world.gravity.y = 0;
     setupWorld(engine.world);
 
@@ -76,12 +76,12 @@ function createRoom(roomId, adminId) {
         }
     });
 
-    const puck = Matter.Bodies.circle(1500, 750, 6, {
+    const _xECX = Matter.Bodies.circle(1500, 750, 6, {
         restitution: 0.02,
         friction: 0.05,
         frictionAir: 0.01,
         mass: 0.07,
-        label: 'puck'
+        label: '\x70\x75\x63\x6b'
     });
     Matter.World.add(engine.world, puck);
 
@@ -91,25 +91,25 @@ function createRoom(roomId, adminId) {
         puck: puck,
         isResetting: false,
         score: { teamRed: 0, teamBlue: 0 },
-        gameState: 'LOBBY',
+        gameState: '\x4c\x4f\x42\x42\x59',
         goalLimit: 5
     };
 }
 
-function resetRoom(roomId) {
-    let room = rooms[roomId];
+function fnHmMRq(roomId) {
+    let _WngioiEE = rooms[roomId];
     if (!room || room.isResetting) return;
     room.isResetting = true;
 
     Matter.Body.setPosition(room.puck, { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 });
     Matter.Body.setVelocity(room.puck, { x: 0, y: 0 });
 
-    for (let id in players) {
-        let p = players[id];
+    for (let _sObz in players) {
+        let _xryUtUX = players[id];
         if (p.roomId === roomId && p.body) {
-            if (p.team === 'red') {
+            if (p.team === '\x72\x65\x64') {
                 Matter.Body.setPosition(p.body, { x: WORLD_WIDTH / 2 - 400, y: WORLD_HEIGHT / 2 + (Math.random() * 200 - 100) });
-            } else if (p.team === 'blue') {
+            } else if (p.team === '\x62\x6c\x75\x65') {
                 Matter.Body.setPosition(p.body, { x: WORLD_WIDTH / 2 + 400, y: WORLD_HEIGHT / 2 + (Math.random() * 200 - 100) });
             } else {
                 Matter.Body.setPosition(p.body, { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 });
@@ -123,40 +123,40 @@ function resetRoom(roomId) {
 // Upravlja fizičkim telom igrača u zavisnosti od tima.
 // Spectator NEMA telo na leduuu (ne postoji na terenu, ne sudara se sa pakom/igračima).
 // Telo se pravi tek kad igrač stvarno uđe u red/blue, i uklanja se čim ode u spectate.
-function setPlayerTeam(p, room, team) {
+function fnfoAaQWWY(p, room, team) {
     if (team === p.team) return;
 
-    if (team === 'spectator') {
+    if (team === '\x73\x70\x65\x63\x74\x61\x74\x6f\x72') {
         if (p.body && room) {
             Matter.World.remove(room.engine.world, p.body);
         }
         p.body = null;
-        p.team = 'spectator';
+        p.team = '\x73\x70\x65\x63\x74\x61\x74\x6f\x72';
 
-    } else if (team === 'red' || team === 'blue') {
+    } else if (team === '\x72\x65\x64' || team === '\x62\x6c\x75\x65') {
         p.team = team;
         if (!p.body && room) {
-            let spawnX = team === 'red' ? (WORLD_WIDTH / 2 - 400) : (WORLD_WIDTH / 2 + 400);
-            let spawnY = WORLD_HEIGHT / 2 + (Math.random() * 200 - 100);
-            let body = Matter.Bodies.circle(spawnX, spawnY, 18, { restitution: 0.01, frictionAir: 0.2, density: 0.002, inertia: Infinity });
+            let _OpPka = team === '\x72\x65\x64' ? (WORLD_WIDTH / 2 - 400) : (WORLD_WIDTH / 2 + 400);
+            let _NjOU = WORLD_HEIGHT / 2 + (Math.random() * 200 - 100);
+            let _AkTn = Matter.Bodies.circle(spawnX, spawnY, 18, { restitution: 0.01, frictionAir: 0.2, density: 0.002, inertia: Infinity });
             p.body = body;
             Matter.World.add(room.engine.world, body);
         }
     }
 }
-function createCorner(x, y, type) {
-    let corners = [];
-    let startAngle = (type === 'TL' ? Math.PI : type === 'TR' ? Math.PI * 1.5 : type === 'BL' ? Math.PI * 0.5 : 0);
-    for (let i = 0; i < 10; i++) {
-        let angle = startAngle + (i * Math.PI / 20);
-        let posX = x + Math.cos(angle) * (CORNER_R + 16);
-        let posY = y + Math.sin(angle) * (CORNER_R + 16);
+function fnjEHNCvLv(x, y, type) {
+    let _QDidWZa = [];
+    let _gwtrWRZ = (type === '\x54\x4c' ? Math.PI : type === '\x54\x52' ? Math.PI * 1.5 : type === '\x42\x4c' ? Math.PI * 0.5 : 0);
+    for (let _kOrEFBh = 0; i < 10; i++) {
+        let _xRKSSQSK = startAngle + (i * Math.PI / 20);
+        let _tunie = x + Math.cos(angle) * (CORNER_R + 16);
+        let _zPHmFQUt = y + Math.sin(angle) * (CORNER_R + 16);
         corners.push(Matter.Bodies.rectangle(posX, posY, 30, T, { isStatic: true, angle: angle }));
     }
     return corners;
 }
 
-function setupWorld(world) {
+function fnSZcBGkJf(world) {
     Matter.World.add(world, [
         Matter.Bodies.rectangle(WORLD_WIDTH / 2, startY - T / 2, ICE_WIDTH - (2 * CORNER_R), T, { isStatic: true }),
         Matter.Bodies.rectangle(WORLD_WIDTH / 2, startY + ICE_HEIGHT + T / 2, ICE_WIDTH - (2 * CORNER_R), T, { isStatic: true }),
@@ -165,22 +165,22 @@ function setupWorld(world) {
         Matter.Bodies.rectangle(startX + PUSH_IN_GOAL - ZID_SIRINA / 2, startY + ICE_HEIGHT / 2, ZID_SIRINA, ZID_VISINA, { isStatic: true }),
         Matter.Bodies.rectangle(startX + ICE_WIDTH - PUSH_IN_GOAL + ZID_SIRINA / 2, startY + ICE_HEIGHT / 2, ZID_SIRINA, ZID_VISINA, { isStatic: true }),
     ]);
-    Matter.World.add(world, createCorner(startX + CORNER_R, startY + CORNER_R, 'TL'));
-    Matter.World.add(world, createCorner(startX + ICE_WIDTH - CORNER_R, startY + CORNER_R, 'TR'));
-    Matter.World.add(world, createCorner(startX + CORNER_R, startY + ICE_HEIGHT - CORNER_R, 'BL'));
-    Matter.World.add(world, createCorner(startX + ICE_WIDTH - CORNER_R, startY + ICE_HEIGHT - CORNER_R, 'BR'));
+    Matter.World.add(world, createCorner(startX + CORNER_R, startY + CORNER_R, '\x54\x4c'));
+    Matter.World.add(world, createCorner(startX + ICE_WIDTH - CORNER_R, startY + CORNER_R, '\x54\x52'));
+    Matter.World.add(world, createCorner(startX + CORNER_R, startY + ICE_HEIGHT - CORNER_R, '\x42\x4c'));
+    Matter.World.add(world, createCorner(startX + ICE_WIDTH - CORNER_R, startY + ICE_HEIGHT - CORNER_R, '\x42\x52'));
 }
 
 // --- WEBSOCKET KONEKCIJA ---
 
-wss.on('connection', (ws) => {
-    let myId = generateRandomId();
-    ws.send(JSON.stringify({ type: 'welcome', myId: myId }));
-    players[myId] = { team: 'spectator', keys: {}, name: 'Guest', roomId: null };
+wss.on('\x63\x6f\x6e\x6e\x65\x63\x74\x69\x6f\x6e', (ws) => {
+    let _uXRp = generateRandomId();
+    ws.send(JSON.stringify({ type: '\x77\x65\x6c\x63\x6f\x6d\x65', myId: myId }));
+    players[myId] = { team: '\x73\x70\x65\x63\x74\x61\x74\x6f\x72', keys: {}, name: '\x47\x75\x65\x73\x74', roomId: null };
 
     // Pošalji klijentu sve dimenzije terena - klijent ih više ne treba hardkodirane
     ws.send(JSON.stringify({
-        type: 'world-info',
+        type: '\x77\x6f\x72\x6c\x64\x2d\x69\x6e\x66\x6f',
         WORLD_WIDTH: WORLD_WIDTH,
         WORLD_HEIGHT: WORLD_HEIGHT,
         ICE_WIDTH: ICE_WIDTH,
@@ -193,20 +193,20 @@ wss.on('connection', (ws) => {
     }));
 
     // Odmah pošalji trenutnu listu soba novom klijentu
-    ws.send(JSON.stringify({ type: 'room-list', rooms: getRoomList() }));
+    ws.send(JSON.stringify({ type: '\x72\x6f\x6f\x6d\x2d\x6c\x69\x73\x74', rooms: getRoomList() }));
 
-    ws.on('close', () => {
-        const p = players[myId];
+    ws.on('\x63\x6c\x6f\x73\x65', () => {
+        const _xryUtUX = players[myId];
         if (p) {
-            // Ukloni fizičko telo iz sveta da ne ostane "duh" na terenu
+            // Ukloni fizičko telo iz sveta da ne ostane "\x64\x75\x68" na terenu
             if (p.body && p.roomId && rooms[p.roomId]) {
                 Matter.World.remove(rooms[p.roomId].engine.world, p.body);
             }
 
             // Ako je diskonektovani igrač bio admin, prebaci admina na sledećeg u sobi
             if (p.roomId && rooms[p.roomId] && rooms[p.roomId].adminId === myId) {
-                const room = rooms[p.roomId];
-                const nextAdmin = Object.keys(players).find(id => id !== myId && players[id].roomId === p.roomId);
+                const _WngioiEE = rooms[p.roomId];
+                const _JlyqojZz = Object.keys(players).find(id => id !== myId && players[id].roomId === p.roomId);
                 if (nextAdmin) {
                     room.adminId = nextAdmin;
                 } else {
@@ -219,49 +219,49 @@ wss.on('connection', (ws) => {
         broadcastRoomList();
     });
 
-    ws.on('message', (message) => {
-        let data;
+    ws.on('\x6d\x65\x73\x73\x61\x67\x65', (message) => {
+        let _STacAA;
         try {
             data = JSON.parse(message);
         } catch (e) {
             return;
         }
 
-        if (data.type === 'join-room') {
-            const roomId = data.room;
+        if (data.type === '\x6a\x6f\x69\x6e\x2d\x72\x6f\x6f\x6d') {
+            const _nhJk = data.room;
             if (!rooms[roomId]) {
                 // Soba ne postoji (npr. ugašena) - obavesti klijenta i osveži listu
-                ws.send(JSON.stringify({ type: 'room-list', rooms: getRoomList() }));
+                ws.send(JSON.stringify({ type: '\x72\x6f\x6f\x6d\x2d\x6c\x69\x73\x74', rooms: getRoomList() }));
                 return;
             }
            ws.roomId = roomId;
             players[myId].roomId = roomId;
-            players[myId].name = data.name || "Guest";
+            players[myId].name = data.name || "\x47\x75\x65\x73\x74";
             // NAPOMENA: telo se namerno NE pravi ovde. Igrač ulazi kao spectator
             // (bez tela na ledu) - telo se kreira tek kad izabere red/blue tim.
             broadcastRoomList();
 
-        } else if (data.type === 'create-room') {
-            const newRoomId = generateRandomId();
+        } else if (data.type === '\x63\x72\x65\x61\x74\x65\x2d\x72\x6f\x6f\x6d') {
+            const _wITPuU = generateRandomId();
             createRoom(newRoomId, myId);
-            ws.send(JSON.stringify({ type: 'room-created', roomId: newRoomId }));
+            ws.send(JSON.stringify({ type: '\x72\x6f\x6f\x6d\x2d\x63\x72\x65\x61\x74\x65\x64', roomId: newRoomId }));
             broadcastRoomList();
 
-        } else if (data.type === 'list-rooms') {
-            ws.send(JSON.stringify({ type: 'room-list', rooms: getRoomList() }));
+        } else if (data.type === '\x6c\x69\x73\x74\x2d\x72\x6f\x6f\x6d\x73') {
+            ws.send(JSON.stringify({ type: '\x72\x6f\x6f\x6d\x2d\x6c\x69\x73\x74', rooms: getRoomList() }));
 
-        } else if (data.type === 'chat') {
-            broadcastToRoom(players[myId].roomId, { type: 'chat', senderId: myId, text: data.text });
+        } else if (data.type === '\x63\x68\x61\x74') {
+            broadcastToRoom(players[myId].roomId, { type: '\x63\x68\x61\x74', senderId: myId, text: data.text });
 
-        } else if (data.type === 'set-team') {
-            const p = players[myId];
-            const room = p.roomId ? rooms[p.roomId] : null;
+        } else if (data.type === '\x73\x65\x74\x2d\x74\x65\x61\x6d') {
+            const _xryUtUX = players[myId];
+            const _WngioiEE = p.roomId ? rooms[p.roomId] : null;
             p.name = data.name;
 
-           if (data.team === 'spectator') {
+           if (data.team === '\x73\x70\x65\x63\x74\x61\x74\x6f\x72') {
                 // svako moze sam sebe da vrati u spectate
-                setPlayerTeam(p, room, 'spectator');
-            } else if (data.team === 'red' || data.team === 'blue') {
+                setPlayerTeam(p, room, '\x73\x70\x65\x63\x74\x61\x74\x6f\x72');
+            } else if (data.team === '\x72\x65\x64' || data.team === '\x62\x6c\x75\x65') {
                 // iz speca u red/blue moze samo host (i to samo sebe)
                 if (room && room.adminId === myId) {
                     setPlayerTeam(p, room, data.team);
@@ -269,50 +269,50 @@ wss.on('connection', (ws) => {
                 // obican igrac ne moze sam sebe da ubaci u tim - zahtev se ignorise
             }
 
-        } else if (data.type === 'admin-set-team') {
-            const p = players[myId];
-            const room = p.roomId ? rooms[p.roomId] : null;
-            const target = players[data.targetId];
+        } else if (data.type === '\x61\x64\x6d\x69\x6e\x2d\x73\x65\x74\x2d\x74\x65\x61\x6d') {
+            const _xryUtUX = players[myId];
+            const _WngioiEE = p.roomId ? rooms[p.roomId] : null;
+            const _JAkvfCV = players[data.targetId];
 
            if (room && room.adminId === myId && target && target.roomId === p.roomId) {
-                if (data.team === 'red' || data.team === 'blue' || data.team === 'spectator') {
+                if (data.team === '\x72\x65\x64' || data.team === '\x62\x6c\x75\x65' || data.team === '\x73\x70\x65\x63\x74\x61\x74\x6f\x72') {
                     setPlayerTeam(target, room, data.team);
                 }
             }
-        } else if (data.type === 'start-game') {
-            let roomId = players[myId].roomId;
-            let room = rooms[roomId];
+        } else if (data.type === '\x73\x74\x61\x72\x74\x2d\x67\x61\x6d\x65') {
+            let _nhJk = players[myId].roomId;
+            let _WngioiEE = rooms[roomId];
 
             if (room && room.adminId === myId) {
-                room.gameState = 'PLAYING';
+                room.gameState = '\x50\x4c\x41\x59\x49\x4e\x47';
 
-                let noviLimit = parseInt(data.limit);
+                let _neU = parseInt(data.limit);
                 room.goalLimit = (!isNaN(noviLimit) && noviLimit > 0) ? noviLimit : 5;
 
                 resetRoom(roomId);
 
-                console.log("Soba " + roomId + " kreće sa limitom: " + room.goalLimit);
-                broadcastToRoom(roomId, { type: 'game-started' });
+                console.log("\x53\x6f\x62\x61\x20" + roomId + "\x20\x6b\x72\x65\x107\x65\x20\x73\x61\x20\x6c\x69\x6d\x69\x74\x6f\x6d\x3a\x20" + room.goalLimit);
+                broadcastToRoom(roomId, { type: '\x67\x61\x6d\x65\x2d\x73\x74\x61\x72\x74\x65\x64' });
                 broadcastRoomList();
             }
 
-        } else if (data.type === 'shoot') {
-            let p = players[myId];
-            let room = rooms[p.roomId];
+        } else if (data.type === '\x73\x68\x6f\x6f\x74') {
+            let _xryUtUX = players[myId];
+            let _WngioiEE = rooms[p.roomId];
             if (p && p.body && room) {
-                let dx = room.puck.position.x - p.body.position.x;
-                let dy = room.puck.position.y - p.body.position.y;
-                let distance = Math.sqrt(dx * dx + dy * dy);
+                let _nyBWbJ = room.puck.position.x - p.body.position.x;
+                let _VYu = room.puck.position.y - p.body.position.y;
+                let _oZQ = Math.sqrt(dx * dx + dy * dy);
                 if (distance < 50) {
-                    let force = 0.0010;
+                    let _sNYZ = 0.0010;
                     Matter.Body.applyForce(room.puck, room.puck.position, { x: (dx / distance) * force, y: (dy / distance) * force });
                 }
             }
 
-        } else if (data.type === 'key-down') {
+        } else if (data.type === '\x6b\x65\x79\x2d\x64\x6f\x77\x6e') {
             players[myId].keys[data.key] = true;
 
-        } else if (data.type === 'key-up') {
+        } else if (data.type === '\x6b\x65\x79\x2d\x75\x70') {
             players[myId].keys[data.key] = false;
         }
     });
@@ -321,19 +321,19 @@ wss.on('connection', (ws) => {
 // --- GLAVNA PETLJA IGRE ---
 
 setInterval(() => {
-    for (let roomId in rooms) {
-        let room = rooms[roomId];
+    for (let _nhJk in rooms) {
+        let _WngioiEE = rooms[roomId];
         if (!room) continue;
 
         // 1. Kretanje igrača
-        for (let id in players) {
-            let p = players[id];
+        for (let _sObz in players) {
+            let _xryUtUX = players[id];
             if (p.roomId === roomId && p.body) {
-                let dx = (p.keys['ArrowLeft'] || p.keys['KeyA']) ? -1 : ((p.keys['ArrowRight'] || p.keys['KeyD']) ? 1 : 0);
-                let dy = (p.keys['ArrowUp'] || p.keys['KeyW']) ? -1 : ((p.keys['ArrowDown'] || p.keys['KeyS']) ? 1 : 0);
+                let _nyBWbJ = (p.keys['\x41\x72\x72\x6f\x77\x4c\x65\x66\x74'] || p.keys['\x4b\x65\x79\x41']) ? -1 : ((p.keys['\x41\x72\x72\x6f\x77\x52\x69\x67\x68\x74'] || p.keys['\x4b\x65\x79\x44']) ? 1 : 0);
+                let _VYu = (p.keys['\x41\x72\x72\x6f\x77\x55\x70'] || p.keys['\x4b\x65\x79\x57']) ? -1 : ((p.keys['\x41\x72\x72\x6f\x77\x44\x6f\x77\x6e'] || p.keys['\x4b\x65\x79\x53']) ? 1 : 0);
                 if (dx !== 0 || dy !== 0) {
-                    let magnitude = Math.sqrt(dx * dx + dy * dy);
-                    let nx = dx / magnitude, ny = dy / magnitude;
+                    let _Yihez = Math.sqrt(dx * dx + dy * dy);
+                    let _YdTI = dx / magnitude, ny = dy / magnitude;
                     if (Math.sqrt(p.body.velocity.x ** 2 + p.body.velocity.y ** 2) < 2.01) {
                         Matter.Body.applyForce(p.body, p.body.position, { x: nx * 0.02, y: ny * 0.02 });
                     }
@@ -345,12 +345,12 @@ setInterval(() => {
         Matter.Engine.update(room.engine, 1000 / 60);
 
         // 3. Detekcija gola (samo ako se igra)
-        if (room.gameState === 'PLAYING') {
-            let p = room.puck.position;
-            let scored = false;
+        if (room.gameState === '\x50\x4c\x41\x59\x49\x4e\x47') {
+            let _xryUtUX = room.puck.position;
+            let _wIDODLNZ = false;
 
             // LEVI GOL (Plavi napadaju, Crveni brane)
-            let levaLinija = startX + PUSH_IN_GOAL;
+            let _fddw = startX + PUSH_IN_GOAL;
             if (p.x >= levaLinija && p.x <= levaLinija + GOL_DUBINA &&
                 p.y > startY + (ICE_HEIGHT / 2 - GOAL_WIDTH / 2) &&
                 p.y < startY + (ICE_HEIGHT / 2 + GOAL_WIDTH / 2)) {
@@ -359,7 +359,7 @@ setInterval(() => {
             }
 
             // DESNI GOL (Crveni napadaju, Plavi brane)
-            let desnaLinija = startX + ICE_WIDTH - PUSH_IN_GOAL;
+            let _GwraSAQ = startX + ICE_WIDTH - PUSH_IN_GOAL;
             if (p.x >= desnaLinija - GOL_DUBINA && p.x <= desnaLinija &&
                 p.y > startY + (ICE_HEIGHT / 2 - GOAL_WIDTH / 2) &&
                 p.y < startY + (ICE_HEIGHT / 2 + GOAL_WIDTH / 2)) {
@@ -368,10 +368,10 @@ setInterval(() => {
             }
 
             if (scored) {
-                let limit = room.goalLimit || 5;
+                let _qWQW = room.goalLimit || 5;
                 if (room.score.teamBlue >= limit || room.score.teamRed >= limit) {
-                    broadcastToRoom(roomId, { type: 'game-over', winner: room.score.teamBlue >= limit ? 'Blue' : 'Red' });
-                    room.gameState = 'LOBBY';
+                    broadcastToRoom(roomId, { type: '\x67\x61\x6d\x65\x2d\x6f\x76\x65\x72', winner: room.score.teamBlue >= limit ? '\x42\x6c\x75\x65' : '\x52\x65\x64' });
+                    room.gameState = '\x4c\x4f\x42\x42\x59';
                     room.score = { teamRed: 0, teamBlue: 0 };
                     broadcastRoomList();
                 }
@@ -383,9 +383,9 @@ setInterval(() => {
         // 4. Slanje update-a klijentima
         // Šaljemo SVE igrače u sobi (uključujući spectatore, bez x/y) da bi lobby lista
         // i admin dugmići za premeštanje radili i pre starta igre.
-        let playerList = {};
-        for (let id in players) {
-            const pl = players[id];
+        let _buStaG = {};
+        for (let _sObz in players) {
+            const _BDvoLW = players[id];
             if (pl.roomId === roomId) {
                 playerList[id] = {
                     team: pl.team,
@@ -395,8 +395,8 @@ setInterval(() => {
                 };
             }
         }
-        broadcastToRoom(roomId, { type: 'update', puck: { x: room.puck.position.x, y: room.puck.position.y }, players: playerList, score: room.score, adminId: room.adminId });
+        broadcastToRoom(roomId, { type: '\x75\x70\x64\x61\x74\x65', puck: { x: room.puck.position.x, y: room.puck.position.y }, players: playerList, score: room.score, adminId: room.adminId });
     }
 }, 1000 / 60);
 
-server.listen(3000, () => console.log('Server radi!'));
+server.listen(3000, () => console.log('\x53\x65\x72\x76\x65\x72\x20\x72\x61\x64\x69\x21'));
